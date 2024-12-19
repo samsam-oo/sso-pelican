@@ -8,7 +8,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
-class SsoController 
+class SsoController
 {
 
     /**
@@ -16,19 +16,20 @@ class SsoController
      *
      * @return Redirect
      */
-    public function handle($token)
+    public function handle($token, Request $request)
     {
       if (!$this->hasToken($token)) {
-        return response(['success' => false, 'message' => 'Token does not exist or has expired'], 404);
+        return redirect()->back()->withError('Token does not exist or has expired');
       }
 
       try {
         Auth::loginUsingId($this->getToken($token));
         $this->invalidateToken($token);
 
-        return response(['success' => true, 'message' => 'Successfully logged in'], 200);
+        $path = $request->query('path', '/');
+        return response('<meta http-equiv="refresh" content="0;url=' . $path . '" />', 200);
       } catch (\Exception $error) {
-        return response(['success' => false, 'message' => 'Something went wrong, please try again.'], 500);
+        return redirect()->back()->withError('Something went wrong, please try again.');
       }
     }
 
