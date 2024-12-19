@@ -16,20 +16,19 @@ class SsoController
      *
      * @return Redirect
      */
-    public function handle($token, Request $request)
+    public function handle($token)
     {
       if (!$this->hasToken($token)) {
-        return redirect()->back()->withError('Token does not exist or has expired');
+        return response(['success' => false, 'message' => 'Token does not exist or has expired'], 404);
       }
 
       try {
         Auth::loginUsingId($this->getToken($token));
         $this->invalidateToken($token);
 
-        $path = $request->query('path', '/');
-        return redirect()->intended($path);
+        return response(['success' => true, 'message' => 'Successfully logged in'], 200);
       } catch (\Exception $error) {
-        return redirect()->back()->withError('Something went wrong, please try again.');
+        return response(['success' => false, 'message' => 'Something went wrong, please try again.'], 500);
       }
     }
 
